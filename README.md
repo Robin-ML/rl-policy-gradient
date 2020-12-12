@@ -4,7 +4,8 @@ The goal of reinforcement learning is to find an optimal behavior strategy for t
 
 The reward function is defined as:
 
-- J(θ)=∑s∈Sdπ(s)Vπ(s)=∑s∈Sdπ(s)∑a∈Aπθ(a|s)Qπ(s,a)
+<img src="https://render.githubusercontent.com/render/math?math=j()=^{i +\pi} =x+1">
+
 where dπ(s) is the stationary distribution of Markov chain for πθ (on-policy state distribution under π). For simplicity, the parameter θ would be omitted for the policy πθ when the policy is present in the subscript of other functions; for example, dπ and Qπ should be dπθ and Qπθ if written in full.
 
 
