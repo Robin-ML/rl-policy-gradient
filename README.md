@@ -24,11 +24,11 @@ Some approaches include:
 The master branch supports Tensorflow from version 1.4 to 1.14. For Tensorflow 2.0 support, please use tf2 branch.
 
 ### PG Algorithms
-- [x]A2C/A3C
-- [ ]ACER
-- [ ]ACKTR
-- [ ]GAE
-- [x]PPO
-- [x]REINFORCE
-- [ ]TNPG
-- [x]TRPO
+* [x] A2C/A3C
+* [ ] ACER
+* [ ] ACKTR
+* [ ] GAE
+* [x] PPO
+* [x] REINFORCE
+* [ ] TNPG
+* [x] TRPO
