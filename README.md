@@ -28,7 +28,7 @@ The master branch supports Tensorflow from version 1.4 to 1.14. For Tensorflow 2
 - [ ]ACER
 - [ ]ACKTR
 - [ ]GAE
-- [ ]Vanilla PG
 - [x]PPO
+- [x]REINFORCE
 - [ ]TNPG
-- [ ]TRPO
+- [x]TRPO
