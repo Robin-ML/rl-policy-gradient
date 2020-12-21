@@ -22,7 +22,7 @@ parser.add_argument('--train', dest='train', action='store_true',
 
 
 args = parser.parse_args()
-model_path = 'model.h5'
+model_path = 'model/model.h5'
 
 def create_env():
     game_name = 'LunarLander-v2'
