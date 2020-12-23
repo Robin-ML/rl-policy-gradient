@@ -6,7 +6,8 @@
 ## Policy Gradient Methods
 We focuses on a particular family of reinforcement learning algorithms that use policy gradient methods. They are designed to be easily adaptable for reinforcement learning environments (like [gym](https://github.com/openai/gym)). 
 
-The goal of reinforcement learning is to find an ```optimal behavior strategy ```for the agent to obtain optimal rewards. The policy gradient methods target at modeling and optimizing the policy directly. The policy is usually modeled with a parameterized function (```θ```), i.e ```π θ(a|s)```. The value of the reward (objective) function depends on this policy and then various algorithms can be applied to optimize ```θ``` for the best reward.
+The goal of reinforcement learning is to find an ```optimal behavior strategy ```for the agent to obtain optimal rewards. The policy gradient methods target at modeling and optimizing the policy directly. The policy is usually modeled with a parameterized function (```θ```), i.e π <sub>θ</sub> (a|s). 
+The value of the reward (objective) function depends on this policy and then various algorithms can be applied to optimize ```θ``` for the best reward.
 
 Finding the ```θ``` that maximises the reward is an ```optimisation problem ```. 
 Some approaches include:
