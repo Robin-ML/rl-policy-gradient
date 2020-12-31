@@ -22,7 +22,7 @@ Some approaches include:
 
 
 ### Tensorflow versions
-The master branch supports Tensorflow from version 2.0
+The master branch supports Tensorflow 2 versions of the baseline algorithm A2C/A3C 
 
 ### PG Algorithms
 * [x] A2C/A3C
