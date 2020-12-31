@@ -22,7 +22,7 @@ Some approaches include:
 
 
 ### Tensorflow versions
-The master branch supports Tensorflow from version 1.4 to 1.14. For Tensorflow 2.0 support, please use tf2 branch.
+The master branch supports Tensorflow from version 2.0
 
 ### PG Algorithms
 * [x] A2C/A3C
