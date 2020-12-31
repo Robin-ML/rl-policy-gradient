@@ -1,4 +1,4 @@
-### Asynchronous Advantage Actor-Critic 
+## Asynchronous Advantage Actor-Critic 
 Asynchronous Advantage Actor-Critic (Mnih et al., 2016), short for A3C, is a classic policy gradient method with a special focus on cparallel training```.
 
 In ***A3C***, the critics learn the value function while ```multiple actors``` are trained in parallel and get synced with ```global parameters``` from time to time. Hence, A3C is designed to work well for parallel training.
@@ -27,6 +27,10 @@ Here is the algorithm outline:
 
 A3C enables the parallelism in multiple agent training. The gradient accumulation step (6.2) can be considered as a parallelized reformation of minibatch-based stochastic gradient update: the values of w or θ get corrected by a little bit in the direction of each training thread independently.
 
-### Asynchronous Actor-Critic
+## Asynchronous Actor-Critic
 
-A2C is a synchronous, deterministic version of A3C; that’s why it is named as “A2C” with the first “A” (“asynchronous”) removed. In A3C each agent talks to the global parameters independently, so it is possible sometimes the thread-specific agents would be playing with policies of different versions and therefore the aggregated update would not be optimal. To resolve the inconsistency, a coordinator in A2C waits for all the parallel actors to finish their work before updating the global parameters and then in the next iteration parallel actors starts from the same policy. The synchronized gradient update keeps the training more cohesive and potentially to make convergence faster.
+```A2C``` is a synchronous, deterministic version of A3C; that’s why it is named as ```A2C``` with the first ```A``` (***“asynchronous”***) removed.
+
+In A3C each agent talks to the global parameters independently, so it is possible sometimes the thread-specific agents would be playing with policies of different versions and therefore the aggregated update would not be optimal.
+
+To resolve the ```inconsistency```, a ***coordinator*** in A2C waits for all the parallel actors to finish their work before updating the global parameters and then in the next iteration parallel actors starts from the same policy. The ```synchronized gradient update``` keeps the training more cohesive and potentially to make convergence faster.
