@@ -32,3 +32,4 @@ The master branch supports Tensorflow 2 versions of the baseline algorithm A2C/A
 * [x] PPO
 * [x] REINFORCE
 * [x] TRPO
+* [x] VMPO
