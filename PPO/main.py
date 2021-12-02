@@ -1,7 +1,7 @@
 import numpy as np
 import time
-import os
-import argparse
+from os.path import exists
+from argparse import ArgumentParser
 import torch  
 import torch.optim as optim
 import torch.nn as nn
@@ -15,7 +15,7 @@ from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-parser = argparse.ArgumentParser(description='Run an algorithm on the environment')
+parser = ArgumentParser(description='Run an algorithm on the environment')
 parser.add_argument('--train', dest='train', action='store_true',
                     help='Train our model.')
 
@@ -30,14 +30,17 @@ def create_env():
     return env
 
 env = create_env()
-input = env.observation_space.shape[0]
+inp = env.observation_space.shape[0]
 output = env.action_space.n
 
-network = Network(input, output).to(device)
+network = Network(inp, output).to(device)
 
 
-if os.path.exists(model_path) == True:
-    network.load_state_dict(torch.load(model_path))     
+if exists(model_path) == True:
+    checkpoint = torch.load(model_path)
+    network.load_state_dict(checkpoint)  
+    #training_steps =  checkpoint['training_step']   
+
 
 
 class Memory:
@@ -58,7 +61,7 @@ class Memory:
 
 def get_action(state, action_probs, memory):
         dist = Categorical(action_probs)
-        action = dist.sample() 
+        action = dist.sample()
         state = torch.from_numpy(state)       
         memory.states.append(state)
         memory.actions.append(action)
@@ -66,10 +69,12 @@ def get_action(state, action_probs, memory):
 
         return action.item()
 
-def update(memory, gamma, epochs, eps_clip, optimizer, network):   
-        # Monte Carlo estimate of state rewards:
+def update(memory, next_state, gamma, epochs, eps_clip, loss_steps, optimizer, network):   
+        # TD estimate of state rewards:
         rewards = []
-        discounted_reward = 0
+        _, value = network.forward(next_state)
+        discounted_reward = value.detach()
+        
         for reward, is_terminal in zip(reversed(memory.rewards), reversed(memory.is_terminals)):
             if is_terminal:
                 discounted_reward = 0
@@ -78,10 +83,9 @@ def update(memory, gamma, epochs, eps_clip, optimizer, network):
         
         # Normalizing the rewards:
         rewards = torch.tensor(rewards, dtype=torch.float32).to(device)
-        rewards = (rewards - rewards.mean()) / (rewards.std() + 1e-5)
         
         # convert list to tensor
-        old_states = torch.stack(memory.states).detach()
+        old_states = torch.stack(memory.states)
         old_actions = torch.stack(memory.actions).to(device).detach()
         old_logprobs = torch.stack(memory.logprobs).to(device).detach()
         
@@ -95,7 +99,7 @@ def update(memory, gamma, epochs, eps_clip, optimizer, network):
             dist_entropy = dist.entropy()
 
             # Finding the ratio (pi_theta / pi_theta__old):
-            ratios = torch.exp(logprobs - old_logprobs.detach())
+            ratios = torch.exp(logprobs - old_logprobs)
                 
             # Finding Surrogate Loss:
             advantages = rewards - value.detach()
@@ -107,35 +111,38 @@ def update(memory, gamma, epochs, eps_clip, optimizer, network):
             critic_loss = 0.5 * mse(value, rewards)
             entropy = 0.01 * dist_entropy
             loss = -actor_loss + critic_loss - entropy
-            writer.add_scalar("Loss", loss.mean(), epoch)
-            
+                      
             # take gradient step
             optimizer.zero_grad()
             loss.mean().backward()
             optimizer.step()  
-           
-        
+            
+            
+            # Log the loss
+        writer.add_scalar("1. Total Loss", loss.mean(), loss_steps)
+        writer.add_scalar("2. Policy Loss", actor_loss.mean(), loss_steps)
+        writer.add_scalar("3. Value Loss", critic_loss.mean(), loss_steps)
 
 def train():
     
     max_episodes = 500
     gamma = 0.95
-    learning_rate = 3e-4
+    learning_rate = 3e-3
     betas = (0.9, 0.999)
     eps_clip = 0.2
-    epochs = 10
+    epochs = 5
     optimizer = optim.Adam(network.parameters(), lr=learning_rate, betas=betas)
     
     # logging variables
     max_timesteps = 300
-    update_timestep = 2000      # update policy every n timesteps
+    update_timestep = 5      # update policy every n timesteps
     log_interval = 20
     running_reward = 0
-    avg_length = 0
-    timestep = 0
+    avg_length, timestep = 0, 0
 
     mem = Memory()
     start = time.time()
+    loss_steps =0
 
     
     for episode in range(1, max_episodes + 1):
@@ -150,23 +157,22 @@ def train():
             # Saving reward and is_terminal:
             mem.rewards.append(reward)
             mem.is_terminals.append(done) 
-            timestep += 1
-
+            
+            timestep +=1
             # update if its time
             if timestep % update_timestep == 0:
-                update(mem, gamma, epochs, eps_clip, optimizer, network)
+                loss_steps += 1
+                update(mem, state, gamma, epochs, eps_clip, loss_steps, optimizer, network)
                 mem.clear_memory()
                 writer.flush()
-                timestep = 0
         
             running_reward += reward
-
             if done:
                 break    
-
+        
         avg_length += t
 
-        if episode % 50== 0:
+        if episode % 10== 0:
             #Save Model
             torch.save(network.state_dict(), model_path)   
 
@@ -179,11 +185,15 @@ def train():
             running_reward = 0
             avg_length = 0
             start = time.time()
+            writer.flush()
       
                     
 
 def play():
-        play_ep = 5
+
+    with torch.no_grad():
+    
+        play_ep = 20
         max_timesteps = 300
         try:
             avg = 0
@@ -192,7 +202,7 @@ def play():
                 reward_sum = 0.0
 
                 for _ in range(max_timesteps):
-                    env.render(mode='rgb_array')
+                    #env.render(mode='rgb_array')
                     policy, _ = network.forward(state)
                     dist = policy.cpu().detach().numpy() 
                     action = np.argmax(dist)
